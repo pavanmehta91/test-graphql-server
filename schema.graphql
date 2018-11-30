@@ -1,0 +1,36 @@
+type Query {
+  getQuestions: [Question]!
+  getUser(id:ID!): User
+}
+
+type Question {
+  id: ID!
+  title: String!
+  body: String!
+  tags: [Tags!]!
+  answers: [Answer]!
+}
+
+type Answer {
+  id: ID!
+  text: String!
+  user: User
+}
+
+type Tags {
+  id: ID!
+  name: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String
+}
+
+
+type Mutation {
+  addUser(name: String!, email: String): User,
+  addQuestion(title: String!, body: String, tags: String): Question
+}
+
