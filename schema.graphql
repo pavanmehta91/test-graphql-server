@@ -1,36 +1,55 @@
+scalar JSON
+
 type Query {
-  getQuestions: [Question]!
-  getUser(id:ID!): User
+  getQuestions(id: Int): [Question]!
+  getQuestion(id: Int): Question
+  getUser(id: Int!): User
+  getAnswers(id: Int!): [Answer]!
+}
+
+enum UpvoteType {
+  ANSWER
+  QUESTION
+}
+
+enum UpvoteValue {
+  UPVOTE
+  DOWNVOTE
 }
 
 type Question {
-  id: ID!
+  id: Int!
+  by: User!
   title: String!
   body: String!
-  tags: [Tags!]!
+  tags: JSON
+  upvoteCount: Int!
   answers: [Answer]!
 }
 
 type Answer {
-  id: ID!
+  id: Int!
   text: String!
-  user: User
+  by: User!
+  upvoteCount: Int!
+  on: Question!
 }
 
-type Tags {
-  id: ID!
+input Tags {
   name: String!
 }
 
 type User {
-  id: ID!
-  name: String!
+  id: Int!
+  name: String
   email: String
 }
 
-
 type Mutation {
-  addUser(name: String!, email: String): User,
-  addQuestion(title: String!, body: String, tags: String): Question
+  addUser(name: String!, email: String): User
+  addQuestion(title: String!, body: String!, tags: [Tags!]!): Question
+  addAnswer(text: String!, on: Int!): Answer
+  upvote(type: UpvoteType, on: Int!, value: UpvoteValue) : Int!
+  favoriteAction(on: Int!) : Boolean!
 }
 
