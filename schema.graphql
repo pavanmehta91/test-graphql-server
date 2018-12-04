@@ -1,11 +1,6 @@
 scalar JSON
 
-type Query {
-  getQuestions(id: Int): [Question]!
-  getQuestion(id: Int): Question
-  getUser(id: Int!): User
-  getAnswers(id: Int!): [Answer]!
-}
+
 
 enum UpvoteType {
   ANSWER
@@ -24,7 +19,9 @@ type Question {
   body: String!
   tags: JSON
   upvoteCount: Int!
-  answers: [Answer]!
+  answers: [Answer]
+  isFavorited: Boolean
+  isUpvoted: Boolean
 }
 
 type Answer {
@@ -33,6 +30,7 @@ type Answer {
   by: User!
   upvoteCount: Int!
   on: Question!
+  isUpvoted: Boolean
 }
 
 input Tags {
@@ -45,11 +43,20 @@ type User {
   email: String
 }
 
+type Query {
+  getQuestions(userId: Int, tag: String): [Question]!
+  getQuestion(id: Int!): Question
+  getUser(id: Int!): User
+  getAnswers: [Answer]!
+  favoritedQuestions: [Question]!
+}
+
 type Mutation {
   addUser(name: String!, email: String): User
   addQuestion(title: String!, body: String!, tags: [Tags!]!): Question
   addAnswer(text: String!, on: Int!): Answer
   upvote(type: UpvoteType, on: Int!, value: UpvoteValue) : Int!
   favoriteAction(on: Int!) : Boolean!
+  editQuestion(title: String, body: String, tags: [Tags!], id: Int!): Question
 }
 
