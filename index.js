@@ -123,6 +123,11 @@ const resolvers = {
   Mutation: {
     addUser: (parent, args, context, info) => {
       const user = { ...args, id: users.length + 1 };
+      const { name } = user;
+      const userFound = users.find(u => u.name.toLowerCase() === name.toLowerCase());
+      if (userFound) {
+        return userFound;
+      }
       users.push(user);
       return user;
     },
