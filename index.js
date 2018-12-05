@@ -1,4 +1,10 @@
-const { ApolloServer, gql, ForbiddenError, AuthenticationError, UserInputError } = require("apollo-server");
+const {
+  ApolloServer,
+  gql,
+  ForbiddenError,
+  AuthenticationError,
+  UserInputError
+} = require("apollo-server");
 const fs = require("fs");
 const path = require("path");
 const _ = require("lodash");
@@ -22,9 +28,9 @@ const resolvers = {
   JSON: GraphQLJSON,
   Query: {
     getAllTags: (parent, args, context, info) => {
-      let tags = questions.reduce((allTags,question) => {
-         return allTags.concat(question.tags.map(t => t.name));
-      },[]);
+      let tags = questions.reduce((allTags, question) => {
+        return allTags.concat(question.tags.map(t => t.name));
+      }, []);
       return Array.from(new Set(tags));
     },
     getQuestions: async (parent, args, context, info) => {
@@ -34,6 +40,7 @@ const resolvers = {
       let questionsResponse = [...questions];
       if (userId) {
         questionsResponse = questionsResponse.filter(q => q.by.id === userId); //getMyQuestions
+        questionsResponse.sort((a, b) => a.upvoteCount - b.upvoteCount);
       }
       if (tag) {
         questionsResponse = questionsResponse.filter(
@@ -51,7 +58,7 @@ const resolvers = {
         q.isUpvoted = upvotes.some(
           u => q.id === u.on && u.type === "QUESTION" && u.by === loggedInUserID
         );
-        q.by = users.find(u=> u.id === q.by.id);
+        q.by = users.find(u => u.id === q.by.id);
         return q;
       });
     },
@@ -73,7 +80,7 @@ const resolvers = {
           .filter(a => a.on.id === id)
           .map(a => {
             a = { ...a };
-            a.by = users.find(u=> u.id === a.by.id);
+            a.by = users.find(u => u.id === a.by.id);
             a.isUpvoted = upvotes.some(
               u =>
                 a.id === u.on && u.type === "ANSWER" && u.by === loggedInUserID
@@ -93,23 +100,22 @@ const resolvers = {
     getAnswers: (parent, args, context, info) => {
       const { user } = context;
       if (!user) {
-        throw new AuthenticationError('You must be logged in');
+        throw new AuthenticationError("You must be logged in");
         //return [];
       }
-      const {id: by } = user;
-      return answers.filter(a => a.by.id = by);
+      const { id: by } = user;
+      return answers.filter(a => (a.by.id = by));
     },
     favoritedQuestions: (parent, args, context, info) => {
       const { user } = context;
       if (!user) {
-       throw new AuthenticationError('You must be logged in');
+        throw new AuthenticationError("You must be logged in");
       }
       const { id: by } = user;
       let favQuestions = favorites.filter(f => by === f.by);
-      return favQuestions.map(favQ=> {
-        return questions.find(q=> q.id === favQ.on);
+      return favQuestions.map(favQ => {
+        return questions.find(q => q.id === favQ.on);
       });
-
     }
   },
   Mutation: {
@@ -121,7 +127,7 @@ const resolvers = {
     editQuestion: (parent, args, context, info) => {
       const { user } = context;
       if (!user) {
-        throw new AuthenticationError('You must be logged in')
+        throw new AuthenticationError("You must be logged in");
       }
       const { id: by } = user;
       const { id, ...rest } = args;
@@ -139,7 +145,7 @@ const resolvers = {
       const { user } = context;
       console.log({ user });
       if (!user) {
-        throw new AuthenticationError('You must be logged in')
+        throw new AuthenticationError("You must be logged in");
       }
       //const { id: by } = user;
       console.log("adding question");
@@ -155,7 +161,7 @@ const resolvers = {
     addAnswer: (parent, args, context, info) => {
       const { user } = context;
       if (!user) {
-        throw new AuthenticationError('You must be logged in')
+        throw new AuthenticationError("You must be logged in");
       }
       const { id: by } = user;
       const answer = {
@@ -172,34 +178,34 @@ const resolvers = {
       const { user } = context;
       let shouldUpdateUpVoteCounter = true;
       if (!user) {
-        throw new AuthenticationError('You must be logged in');
+        throw new AuthenticationError("You must be logged in");
       }
       const { id: by } = user;
       const { on, value, type } = args;
       const upvoteOn = type === "ANSWER" ? answers : questions;
       const toUpvoteObj = upvoteOn.find(a => a.id === on && a.by !== by);
-      if (!toUpvoteObj || toUpvoteObj.by.id === by ) {
+      if (!toUpvoteObj || toUpvoteObj.by.id === by) {
         throw new ForbiddenError(`Operation Not Allowed`);
       }
       const upvoteObj = upvotes.find(
         u => u.on === on && u.by.id === by && u.type === type
       );
       if (upvoteObj) {
-        shouldUpdateUpVoteCounter = upvoteObj.value === value ? false: true;
+        shouldUpdateUpVoteCounter = upvoteObj.value === value ? false : true;
         upvoteObj.value = value;
       } else {
         const upvote = { ...args, id: upvotes.length + 1, by };
         upvotes.push(upvote);
       }
 
-      if(shouldUpdateUpVoteCounter) toUpvoteObj.upvoteCount += value;
+      if (shouldUpdateUpVoteCounter) toUpvoteObj.upvoteCount += value;
       return toUpvoteObj.upvoteCount;
     },
     favoriteAction: (parent, args, context, info) => {
       const { on } = args;
       const { user } = context;
       if (!user) {
-        throw new AuthenticationError('You must be logged in')
+        throw new AuthenticationError("You must be logged in");
       }
       const { id: by } = user;
       let favObj = favorites.find(f => f.on === on && context.user.id === f.by);
@@ -224,7 +230,7 @@ const typeDefs = fs.readFileSync(
 );
 const server = new ApolloServer({
   cors: {
-    origin: '*',
+    origin: "*"
   },
   typeDefs,
   resolvers,
