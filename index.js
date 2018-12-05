@@ -101,10 +101,12 @@ const resolvers = {
       const { user } = context;
       if (!user) {
         throw new AuthenticationError("You must be logged in");
-        //return [];
       }
       const { id: by } = user;
-      return answers.filter(a => (a.by.id = by));
+      const answerResponse = [...answers];
+      answerResponse = answerResponse.filter(a => (a.by.id = by));
+      answerResponse.sort((a, b) => a.upvoteCount - b.upvoteCount);
+      return answerResponse;
     },
     favoritedQuestions: (parent, args, context, info) => {
       const { user } = context;
