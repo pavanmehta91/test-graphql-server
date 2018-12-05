@@ -21,6 +21,12 @@ const resolvers = {
   },
   JSON: GraphQLJSON,
   Query: {
+    getAllTags: (parent, args, context, info) => {
+      let tags = questions.reduce((allTags,question) => {
+         return allTags.concat(question.tags.map(t => t.name));
+      },[]);
+      return Array.from(new Set(tags));
+    },
     getQuestions: async (parent, args, context, info) => {
       const { user } = context;
       let loggedInUserID = user ? user.id : "";
@@ -45,6 +51,7 @@ const resolvers = {
         q.isUpvoted = upvotes.some(
           u => q.id === u.on && u.type === "QUESTION" && u.by === loggedInUserID
         );
+        q.by = users.find(u=> u.id === q.by.id);
         return q;
       });
     },
@@ -78,13 +85,16 @@ const resolvers = {
       return null;
     },
     getUser: async (parent, args, context, info) => {
-      const { id } = args;
+      let { id } = args;
+      const { user } = context;
+      id = user && !id ? user.id : id;
       return users.find(u => u.id === id);
     },
     getAnswers: (parent, args, context, info) => {
       const { user } = context;
       if (!user) {
-        return []
+        throw new AuthenticationError('You must be logged in');
+        //return [];
       }
       const {id: by } = user;
       return answers.filter(a => a.by.id = by);
@@ -213,7 +223,9 @@ const typeDefs = fs.readFileSync(
   "utf8"
 );
 const server = new ApolloServer({
-  cors: true,
+  cors: {
+    origin: '*',
+  },
   typeDefs,
   resolvers,
   context: ({ req }) => {

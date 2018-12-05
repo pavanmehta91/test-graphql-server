@@ -46,9 +46,10 @@ type User {
 type Query {
   getQuestions(userId: Int, tag: String): [Question]!
   getQuestion(id: Int!): Question
-  getUser(id: Int!): User
+  getUser(id: Int): User
   getAnswers: [Answer]!
   favoritedQuestions: [Question]!
+  getAllTags: JSON
 }
 
 type Mutation {

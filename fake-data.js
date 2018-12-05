@@ -229,4 +229,7 @@ query favoritedQuestions{
     body
   }
 }
+query getAllTags{
+  allTags: getAllTags
+}
 */
